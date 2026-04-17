@@ -19,6 +19,7 @@ import {
 } from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {useAnalytics} from '../../lib/hooks/useAnalytics';
+import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 import useSWR from 'swr';
 import {
   Activity,
@@ -63,7 +64,10 @@ export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState<string>('30');
   const days = parseInt(dateRange);
 
-  const {stats, timeSeries, isLoading, error} = useAnalytics({days});
+  const {activeProject} = useActiveProject();
+  const projectId = activeProject?.id ?? null;
+
+  const {stats, timeSeries, isLoading, error} = useAnalytics({days, projectId});
 
   // Calculate start and end dates for additional API calls
   const {startDate, endDate} = useMemo(() => {
@@ -72,31 +76,31 @@ export default function AnalyticsPage() {
     return {startDate: start.toISOString(), endDate: end.toISOString()};
   }, [days]);
 
-    const {data: campaignStats} = useSWR<{
+  const {data: campaignStats} = useSWR<{
     total: number;
     active: number;
     completed: number;
     averageOpenRate: number;
     averageClickRate: number;
-  }>(`/analytics/campaign-stats?startDate=${startDate}&endDate=${endDate}`, {
+  }>(projectId ? `/analytics/campaign-stats?startDate=${startDate}&endDate=${endDate}` : null, {
     revalidateOnFocus: false,
     refreshInterval: 300000,
     dedupingInterval: 10000,
   });
 
-    const {data: topEvents} = useSWR<
+  const {data: topEvents} = useSWR<
     {
       name: string;
       count: number;
       trend: number;
     }[]
-  >(`/analytics/top-events?limit=5&startDate=${startDate}&endDate=${endDate}`, {
+  >(projectId ? `/analytics/top-events?limit=5&startDate=${startDate}&endDate=${endDate}` : null, {
     revalidateOnFocus: false,
     refreshInterval: 300000,
     dedupingInterval: 10000,
   });
 
-    const {data: topCampaigns} = useSWR<
+  const {data: topCampaigns} = useSWR<
     {
       id: string;
       subject: string;
@@ -106,7 +110,7 @@ export default function AnalyticsPage() {
       openRate: number;
       clickRate: number;
     }[]
-  >(`/analytics/top-campaigns?limit=10&startDate=${startDate}&endDate=${endDate}`, {
+  >(projectId ? `/analytics/top-campaigns?limit=10&startDate=${startDate}&endDate=${endDate}` : null, {
     revalidateOnFocus: false,
     refreshInterval: 300000,
     dedupingInterval: 10000,

@@ -30,13 +30,14 @@ interface UseAnalyticsOptions {
   startDate?: string;
   endDate?: string;
   days?: number;
+  projectId?: string | null;
 }
 
 /**
  * Hook to fetch analytics data including activity stats and time series data
  */
 export function useAnalytics(options: UseAnalyticsOptions = {}): AnalyticsData {
-  const {days = 30} = options;
+  const {days = 30, projectId = undefined} = options;
 
   // Calculate date range - memoized to prevent infinite re-renders
   // Only recalculate when days or explicit dates change
@@ -54,7 +55,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): AnalyticsData {
     data: stats,
     error: statsError,
     isLoading: statsLoading,
-  } = useSWR<ActivityStats>(`/activity/stats?startDate=${startDate}&endDate=${endDate}`, {
+  } = useSWR<ActivityStats>(projectId !== null ? `/activity/stats?startDate=${startDate}&endDate=${endDate}` : null, {
     revalidateOnFocus: false,
     refreshInterval: 300000, // Refresh every 5 minutes
     dedupingInterval: 10000, // Prevent duplicate requests within 10 seconds
@@ -64,7 +65,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): AnalyticsData {
     data: timeSeries,
     error: timeSeriesError,
     isLoading: timeSeriesLoading,
-  } = useSWR<TimeSeriesDataPoint[]>(`/analytics/timeseries?startDate=${startDate}&endDate=${endDate}`, {
+  } = useSWR<TimeSeriesDataPoint[]>(projectId !== null ? `/analytics/timeseries?startDate=${startDate}&endDate=${endDate}` : null, {
     revalidateOnFocus: false,
     refreshInterval: 300000, // Refresh every 5 minutes
     dedupingInterval: 10000, // Prevent duplicate requests within 10 seconds
