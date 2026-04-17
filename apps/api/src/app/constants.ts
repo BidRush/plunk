@@ -77,13 +77,14 @@ export const STRIPE_PRICE_EMAIL_USAGE = validateEnv('STRIPE_PRICE_EMAIL_USAGE', 
 export const STRIPE_METER_EVENT_NAME = validateEnv('STRIPE_METER_EVENT_NAME', 'emails'); // Meter event name (API key in Stripe)
 
 // Email Tracking
-export const SES_CONFIGURATION_SET = validateEnv('SES_CONFIGURATION_SET', 'plunk-configuration-set');
-export const SES_CONFIGURATION_SET_NO_TRACKING = validateEnv(
-  'SES_CONFIGURATION_SET_NO_TRACKING',
-  'plunk-configuration-set-no-tracking',
-);
-// Check if no-tracking configuration set was explicitly provided (not using default)
-export const TRACKING_TOGGLE_ENABLED = process.env.SES_CONFIGURATION_SET_NO_TRACKING !== undefined;
+export const SES_CONFIGURATION_SET = validateEnv('SES_CONFIGURATION_SET', '');
+export const SES_CONFIGURATION_SET_NO_TRACKING = validateEnv('SES_CONFIGURATION_SET_NO_TRACKING', '');
+// Tracking toggle only makes sense when both configuration sets are explicitly available.
+export const TRACKING_TOGGLE_ENABLED =
+  process.env.SES_CONFIGURATION_SET !== undefined &&
+  process.env.SES_CONFIGURATION_SET_NO_TRACKING !== undefined &&
+  SES_CONFIGURATION_SET !== '' &&
+  SES_CONFIGURATION_SET_NO_TRACKING !== '';
 
 // SMTP Server Configuration (optional)
 // SMTP server can run with or without a domain (runs without TLS in dev mode)

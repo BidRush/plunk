@@ -464,6 +464,27 @@ describe('SegmentService', () => {
       ).rejects.toThrow(/requires a value/i);
     });
 
+    it('should REJECT startsWith without a value', async () => {
+      await expect(
+        SegmentService.create(projectId, {
+          name: 'Invalid Segment',
+          condition: {
+            logic: 'AND',
+            groups: [
+              {
+                filters: [
+                  {
+                    field: 'email',
+                    operator: 'startsWith',
+                  } as InvalidFilterInput as SegmentFilter,
+                ],
+              },
+            ],
+          },
+        }),
+      ).rejects.toThrow(/requires a value/i);
+    });
+
     it('should ACCEPT valid filters', async () => {
       const segment = await SegmentService.create(projectId, {
         name: 'Valid Segment',

@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {
   Alert,
   AlertDescription,
@@ -45,6 +45,13 @@ export function EmailDomainInput({value, onChange, id, placeholder, required, la
   // Use derived state for display, with fallback to first domain if none specified
   const displayDomain = parsedEmail.domain || (verifiedDomains.length > 0 ? verifiedDomains[0]!.domain : '');
   const displayLocalPart = parsedEmail.localPart;
+
+  useEffect(() => {
+    // Normalize bare local parts so the controlled value matches the rendered domain selector.
+    if (value && !value.includes('@') && displayDomain) {
+      onChange(`${value}@${displayDomain}`);
+    }
+  }, [displayDomain, onChange, value]);
 
   const handleLocalPartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newLocal = e.target.value;

@@ -9,6 +9,7 @@ export type SegmentFilterOperator =
   // Standard operators (for contact fields)
   | 'equals'
   | 'notEquals'
+  | 'startsWith'
   | 'contains'
   | 'notContains'
   | 'greaterThan'

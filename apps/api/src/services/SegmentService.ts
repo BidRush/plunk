@@ -725,6 +725,7 @@ export class SegmentService {
     const validOperators = [
       'equals',
       'notEquals',
+      'startsWith',
       'contains',
       'notContains',
       'greaterThan',
@@ -749,6 +750,7 @@ export class SegmentService {
     const operatorsNeedingValue = [
       'equals',
       'notEquals',
+      'startsWith',
       'contains',
       'notContains',
       'greaterThan',
@@ -845,6 +847,8 @@ export class SegmentService {
           };
         }
         return {NOT: {data: {path, equals: value as Prisma.InputJsonValue}}};
+      case 'startsWith':
+        return {data: {path, string_starts_with: String(value)}};
       case 'contains':
         return {data: {path, string_contains: String(value)}};
       case 'notContains':
@@ -911,6 +915,8 @@ export class SegmentService {
         return {[field]: {equals: String(value), mode: 'insensitive'}};
       case 'notEquals':
         return {NOT: {[field]: {equals: String(value), mode: 'insensitive'}}};
+      case 'startsWith':
+        return {[field]: {startsWith: String(value), mode: 'insensitive'}};
       case 'contains':
         return {[field]: {contains: String(value), mode: 'insensitive'}};
       case 'notContains':

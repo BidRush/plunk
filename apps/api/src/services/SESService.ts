@@ -210,15 +210,20 @@ ${breakLongLines(attachment.content, 76, true)}`;
   const configurationSetName =
     TRACKING_TOGGLE_ENABLED && !tracking ? SES_CONFIGURATION_SET_NO_TRACKING : SES_CONFIGURATION_SET;
 
-  // Send via SES
-  const response = await ses.sendRawEmail({
+  const sendParams: Parameters<typeof ses.sendRawEmail>[0] = {
     Destinations: destinations,
-    ConfigurationSetName: configurationSetName,
     RawMessage: {
       Data: new TextEncoder().encode(rawMessage),
     },
     Source: `${from.name} <${from.email}>`,
-  });
+  };
+
+  if (configurationSetName) {
+    sendParams.ConfigurationSetName = configurationSetName;
+  }
+
+  // Send via SES
+  const response = await ses.sendRawEmail(sendParams);
 
   if (!response.MessageId) {
     throw new Error('Could not send email');

@@ -249,6 +249,66 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       });
     });
 
+    describe('startsWith operator', () => {
+      it('should match prefixes in JSON data fields', async () => {
+        const match = await factories.createContact({
+          projectId,
+          data: {company: 'Acme Corporation'},
+        });
+        await factories.createContact({
+          projectId,
+          data: {company: 'Beta Acme'},
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'data.company', operator: 'startsWith', value: 'Acme'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
+      });
+
+      it('should match prefixes in email field (case-insensitive)', async () => {
+        const match1 = await factories.createContact({
+          projectId,
+          email: 'user@company.com',
+        });
+        const match2 = await factories.createContact({
+          projectId,
+          email: 'USER@company.org',
+        });
+        await factories.createContact({
+          projectId,
+          email: 'admin@company.com',
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'email', operator: 'startsWith', value: 'user@'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        const ids = result.data.map(c => c.id);
+        expect(ids).toContain(match1.id);
+        expect(ids).toContain(match2.id);
+        expect(result.data).toHaveLength(2);
+      });
+
+      it('should not match when field does not exist', async () => {
+        await factories.createContact({
+          projectId,
+          data: {other: 'value'},
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'data.company', operator: 'startsWith', value: 'Acme'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.data).toHaveLength(0);
+      });
+    });
+
     describe('notContains operator', () => {
       it('should exclude substring matches in JSON data fields', async () => {
         const match = await factories.createContact({

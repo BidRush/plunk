@@ -19,6 +19,7 @@ import {network} from '../lib/network';
 const STANDARD_OPERATORS: {value: SegmentFilterOperator; label: string}[] = [
   {value: 'equals', label: 'Equals'},
   {value: 'notEquals', label: 'Not equals'},
+  {value: 'startsWith', label: 'Starts with'},
   {value: 'contains', label: 'Contains'},
   {value: 'notContains', label: 'Does not contain'},
   {value: 'greaterThan', label: 'Greater than'},
@@ -181,7 +182,7 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
 
     // String type - no within operator, no comparison operators
     return STANDARD_OPERATORS.filter(op =>
-      ['equals', 'notEquals', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value),
+      ['equals', 'notEquals', 'startsWith', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value),
     );
   }, []);
 
@@ -227,7 +228,7 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
 
     // String type - no within operator, no comparison operators
     return STANDARD_OPERATORS.filter(op =>
-      ['equals', 'notEquals', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value),
+      ['equals', 'notEquals', 'startsWith', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value),
     );
   }, [fieldType, isEventOrEmailActivity]);
 
