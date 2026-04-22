@@ -2,6 +2,7 @@ import {SES} from '@aws-sdk/client-ses';
 import signale from 'signale';
 
 import {
+  API_URI,
   AWS_SES_ACCESS_KEY_ID,
   AWS_SES_REGION,
   AWS_SES_SECRET_ACCESS_KEY,
@@ -99,7 +100,7 @@ export async function sendRawEmail({
   let unsubscribeHeader = '';
   if (containsUnsubscribeLink?.[1]) {
     const unsubscribeId = containsUnsubscribeLink[1];
-    unsubscribeHeader = `List-Unsubscribe: <${DASHBOARD_URI}/unsubscribe/${unsubscribeId}>`;
+    unsubscribeHeader = `List-Unsubscribe: <${API_URI}/contacts/public/${unsubscribeId}/unsubscribe>\r\nList-Unsubscribe-Post: List-Unsubscribe=One-Click`;
   }
 
   // Generate unique boundaries for multipart messages
