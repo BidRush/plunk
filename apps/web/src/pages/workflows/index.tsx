@@ -32,8 +32,10 @@ import {toast} from 'sonner';
 import useSWR from 'swr';
 import {WorkflowSchemas} from '@plunk/shared';
 import dayjs from 'dayjs';
+import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 export default function WorkflowsPage() {
+  const {activeProject} = useActiveProject();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -43,7 +45,7 @@ export default function WorkflowsPage() {
 
   const {data, mutate, isLoading} = useSWR<
     PaginatedResponse<Workflow & {_count?: {steps: number; executions: number}}>
-  >(`/workflows?page=${page}&pageSize=20${search ? `&search=${search}` : ''}`, {revalidateOnFocus: false});
+  >(activeProject ? `/workflows?page=${page}&pageSize=20${search ? `&search=${search}` : ''}` : null, {revalidateOnFocus: false});
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -21,6 +21,7 @@ import {useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import dayjs from 'dayjs';
+import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 // Helper function to count total filters in a condition
 function countFiltersInCondition(condition: unknown): number {
@@ -40,12 +41,13 @@ function countFiltersInCondition(condition: unknown): number {
 }
 
 export default function SegmentsPage() {
+  const {activeProject} = useActiveProject();
   // Limit to 50 segments to avoid loading thousands into the browser
   const {
     data: segments,
     mutate,
     isLoading,
-  } = useSWR<Segment[]>('/segments', {
+  } = useSWR<Segment[]>(activeProject ? '/segments' : null, {
     revalidateOnFocus: false,
   });
 

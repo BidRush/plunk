@@ -43,9 +43,11 @@ import {useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {ContactSchemas} from '@plunk/shared';
+import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 import dayjs from 'dayjs';
 
 export default function ContactsPage() {
+  const {activeProject} = useActiveProject();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([undefined]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -63,7 +65,7 @@ export default function ContactsPage() {
   const pageSize = 50;
 
   const {data, mutate, isLoading} = useSWR<CursorPaginatedResponse<Contact>>(
-    `/contacts?limit=${pageSize}${cursor ? `&cursor=${cursor}` : ''}${search ? `&search=${search}` : ''}`,
+    activeProject ? `/contacts?limit=${pageSize}${cursor ? `&cursor=${cursor}` : ''}${search ? `&search=${search}` : ''}` : null,
     {revalidateOnFocus: false},
   );
 

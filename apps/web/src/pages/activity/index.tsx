@@ -16,6 +16,7 @@ import {Eye, MousePointerClick, Send, Zap} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import {useQueryState, parseAsString} from 'nuqs';
 import useSWR from 'swr';
+import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 interface ActivityStats {
   totalEvents: number;
@@ -30,9 +31,10 @@ interface ActivityStats {
 export default function ActivityPage() {
   const [typeFilter, setTypeFilter] = useQueryState('type', parseAsString.withDefault('ALL'));
   const [dateRange, setDateRange] = useQueryState('days', parseAsString.withDefault('30'));
+  const {activeProject} = useActiveProject();
 
-  // Fetch activity stats
-  const {data: stats} = useSWR<ActivityStats>(`/activity/stats`, {
+  // Fetch activity stats — only when project is ready
+  const {data: stats} = useSWR<ActivityStats>(activeProject ? `/activity/stats` : null, {
     revalidateOnFocus: false,
   });
 

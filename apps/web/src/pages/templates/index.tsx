@@ -21,8 +21,10 @@ import {useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import dayjs from 'dayjs';
+import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 export default function TemplatesPage() {
+  const {activeProject} = useActiveProject();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -31,7 +33,7 @@ export default function TemplatesPage() {
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
 
   const {data, mutate, isLoading} = useSWR<PaginatedResponse<Template>>(
-    `/templates?page=${page}&pageSize=20${search ? `&search=${search}` : ''}${typeFilter !== 'ALL' ? `&type=${typeFilter}` : ''}`,
+    activeProject ? `/templates?page=${page}&pageSize=20${search ? `&search=${search}` : ''}${typeFilter !== 'ALL' ? `&type=${typeFilter}` : ''}` : null,
     {revalidateOnFocus: false},
   );
 
