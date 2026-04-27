@@ -51,6 +51,44 @@ interface SendRawEmailParams {
 /**
  * Break long lines to comply with email RFC standards
  */
+function encodeQuotedPrintable(input: string): string {
+  const bytes = Buffer.from(input, 'utf-8');
+  const maxLineLength = 76;
+  let result = '';
+  let lineLength = 0;
+
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes[i]!;
+
+    if (byte === 0x0d && i + 1 < bytes.length && bytes[i + 1] === 0x0a) {
+      result += '\r\n';
+      i++;
+      lineLength = 0;
+      continue;
+    }
+    if (byte === 0x0a) {
+      result += '\n';
+      lineLength = 0;
+      continue;
+    }
+
+    const encoded =
+      byte === 0x09 || (byte >= 0x20 && byte <= 0x7e && byte !== 0x3d)
+        ? String.fromCharCode(byte)
+        : '=' + byte.toString(16).toUpperCase().padStart(2, '0');
+
+    if (lineLength + encoded.length > maxLineLength) {
+      result += '=\n';
+      lineLength = 0;
+    }
+
+    result += encoded;
+    lineLength += encoded.length;
+  }
+
+  return result;
+}
+
 function breakLongLines(input: string, maxLineLength: number, isBase64 = false): string {
   if (isBase64) {
     // For base64 content, break at exact intervals without looking for spaces
@@ -97,11 +135,16 @@ export async function sendRawEmail({
   const regex = /unsubscribe\/([a-f\d-]+)"/;
   const containsUnsubscribeLink = regex.exec(content.html);
 
-  let unsubscribeHeader = '';
+  const extraHeaderLines: string[] = [];
+  if (headers) {
+    Object.entries(headers).forEach(([key, value]) => extraHeaderLines.push(`${key}: ${value}`));
+  }
   if (containsUnsubscribeLink?.[1]) {
     const unsubscribeId = containsUnsubscribeLink[1];
-    unsubscribeHeader = `List-Unsubscribe: <${API_URI}/contacts/public/${unsubscribeId}/unsubscribe>\r\nList-Unsubscribe-Post: List-Unsubscribe=One-Click`;
+    extraHeaderLines.push(`List-Unsubscribe: <${API_URI}/contacts/public/${unsubscribeId}/unsubscribe>`);
+    extraHeaderLines.push(`List-Unsubscribe-Post: List-Unsubscribe=One-Click`);
   }
+  const extraHeaders = extraHeaderLines.length > 0 ? extraHeaderLines.join('\n') + '\n' : '';
 
   // Generate unique boundaries for multipart messages
   const altBoundary = `----=_AltPart_${Math.random().toString(36).substring(2)}`;
@@ -141,15 +184,7 @@ Reply-To: ${reply || from.email}
 Subject: ${content.subject}
 MIME-Version: 1.0
 Content-Type: ${rootContentType}
-${
-  headers
-    ? Object.entries(headers)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join('\n')
-    : ''
-}
-${unsubscribeHeader}
-
+${extraHeaders}
 `;
 
   // building the body
@@ -171,9 +206,9 @@ ${unsubscribeHeader}
   // The alternative part content (always contains HTML)
   rawMessage += `--${altBoundary}
 Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-${breakLongLines(content.html, 500)}
+${encodeQuotedPrintable(content.html)}
 --${altBoundary}--
 `;
 
